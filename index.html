@@ -380,6 +380,16 @@
     .result-table td {
       padding: 9px 10px;
     }
+  @media (max-width: 560px) {
+    .dropdown-content {
+      left: 0;
+      right: auto;
+      min-width: min(92vw, 360px);
+      column-count: 1;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+  }
   }
 </style>
 </head>
