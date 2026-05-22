@@ -464,7 +464,7 @@
 
 <script>
 let sheetData = [];
-const SHEET_URL = './datasets.csv';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRFAGAxugycmghkxnrii5L1llC3kX1uFN-1sFbry6ft6LsyeenLrKiBg7RLspwtsaxpiXNR5ESLg7Ru/pub?gid=633174637&single=true&output=csv';
 
 async function fetchSheetData() {
   try {
@@ -518,10 +518,7 @@ function parseCSV(csv) {
   }
 
   if (rows.length === 0) return [];
-  const headers = rows[0].map(header =>
-  header.replace(/^\uFEFF/, '').trim()
-
-);
+  const headers = rows[0].map(header => header.trim());
 
   return rows.slice(1).map(values => {
     const rowObject = {};
