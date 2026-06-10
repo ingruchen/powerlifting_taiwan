@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>全國紀錄查詢｜健力成績資料庫</title>
+<style>
+  /* font-size-adjusted-plus-4px */
+  :root {
+    --bg: #f6f3ee;
+    --card: #fffdf8;
+    --ink: #2b2723;
+    --muted: #7a7168;
+    --line: #e6ded4;
+    --accent: #8b5e3c;
+    --accent-dark: #6f4528;
+    --accent-soft: #f2e5d8;
+    --cream: #fffaf3;
+    --shadow: 0 16px 40px rgba(73, 55, 36, .08);
+    --radius-lg: 24px;
+    --radius-md: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: radial-gradient(circle at top left, #fff7e8, var(--bg) 42%, #efe8df);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    width: min(1180px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 28px 0 48px;
+  }
+
+  .hero {
+    background: rgba(255, 253, 248, .92);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    right: -80px;
+    top: -80px;
+    width: 220px;
+    height: 220px;
+    border-radius: 999px;
+    background: rgba(215, 176, 138, .28);
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(30px, 5vw, 48px);
+    letter-spacing: .04em;
+    line-height: 1.18;
+  }
+
+  .hero-subtitle {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 19px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .info-card {
+    background: var(--cream);
+    border: 1px dashed #dac7b4;
+    border-radius: var(--radius-md);
+    padding: 13px 14px;
+    font-size: 18px;
+  }
+
+  .info-card strong {
+    display: block;
+    color: var(--accent-dark);
+    margin-bottom: 3px;
+  }
+
+  .notice {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 17px;
+  }
+
+  .panel {
+    background: rgba(255, 253, 248, .92);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    margin: 0 0 12px;
+    font-size: 22px;
+    font-weight: 850;
+    letter-spacing: .02em;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 58px;
+    border-radius: 18px;
+    padding: 12px 16px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 850;
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 10px 22px rgba(111, 69, 40, .12);
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+
+  .menu-button:hover {
+    transform: translateY(-1px);
+    background: var(--accent-dark);
+    box-shadow: 0 12px 24px rgba(111, 69, 40, .18);
+  }
+
+  .menu-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, .18), 0 12px 24px rgba(111, 69, 40, .18);
+  }
+
+  .search-box {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1.2fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .field label {
+    display: block;
+    font-size: 17px;
+    color: var(--muted);
+    font-weight: 750;
+    margin-bottom: 6px;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 20px;
+    outline: none;
+    appearance: none;
+  }
+
+  .dropdown-content input[type="checkbox"] {
+    width: auto;
+    min-height: auto;
+    appearance: auto;
+    margin-right: 7px;
+    accent-color: var(--accent);
+  }
+
+  select {
+    background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 34px;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, .14);
+  }
+
+  button {
+    border: 0;
+    border-radius: 999px;
+    min-height: 46px;
+    padding: 10px 18px;
+    font-size: 19px;
+    font-weight: 850;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    white-space: nowrap;
+    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(111, 69, 40, .18);
+  }
+
+  button:active { transform: translateY(0); }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .column-control {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropbtn {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+    padding: 7px 12px;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: var(--card);
+    min-width: 340px;
+    max-width: min(90vw, 460px);
+    box-shadow: 0 18px 42px rgba(73, 55, 36, .16);
+    z-index: 100;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .dropdown-content label {
+    display: block;
+    break-inside: avoid;
+    padding: 5px 0;
+    font-size: 18px;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .dropdown-content input {
+    width: auto;
+    min-height: auto;
+    margin-right: 7px;
+    accent-color: var(--accent);
+  }
+
+  .show { display: block; }
+
+  .result-wrap {
+    background: rgba(255, 253, 248, .92);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  #result {
+    min-height: 120px;
+  }
+
+  .empty-state,
+  .loading-state {
+    padding: 26px 20px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .result-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: 19px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .result-table th,
+  .result-table td {
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid #f0e7dc;
+    padding: 10px 12px;
+    text-align: center;
+    background: #fffdf8;
+  }
+
+  .result-table th {
+    background: #f4e7d9;
+    color: #5d3c25;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    font-weight: 850;
+  }
+
+  .result-table tbody tr:nth-child(even) td {
+    background: #fff8ef;
+  }
+
+  .result-table tbody tr:hover td {
+    background: #f8eadc;
+  }
+
+  .result-table td:first-child,
+  .result-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 11;
+    box-shadow: 8px 0 12px rgba(73, 55, 36, .05);
+  }
+
+  .result-table th:first-child {
+    background: #ead3bc;
+    z-index: 12;
+  }
+
+  .result-table td:first-child {
+    background: #fffaf3;
+    font-weight: 800;
+    color: var(--accent-dark);
+  }
+
+  .hide-column {
+    display: none !important;
+  }
+
+  .small-action {
+    background: transparent;
+    color: var(--accent-dark);
+    border: 1px solid var(--line);
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  .records-search-box {
+    grid-template-columns: 1fr 1fr auto;
+  }
+
+  .record-section {
+    padding: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .record-section:last-child {
+    border-bottom: 0;
+  }
+
+  .record-section-title {
+    margin: 0 0 10px;
+    color: var(--accent-dark);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: .02em;
+  }
+
+  .record-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: 19px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .record-table th,
+  .record-table td {
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid #f0e7dc;
+    padding: 10px 12px;
+    text-align: center;
+    background: #fffdf8;
+  }
+
+  .record-table th {
+    background: #f4e7d9;
+    color: #5d3c25;
+    font-weight: 850;
+  }
+
+  .record-table tbody tr:nth-child(even) td {
+    background: #fff8ef;
+  }
+
+  .record-table tbody tr:hover td {
+    background: #f8eadc;
+  }
+
+  .record-table th:first-child,
+  .record-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: #fffaf3;
+    font-weight: 850;
+    color: var(--accent-dark);
+    box-shadow: 8px 0 12px rgba(73, 55, 36, .05);
+  }
+
+
+  @media (max-width: 900px) {
+    .search-box {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .search-box button {
+      grid-column: 1 / -1;
+    }
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .wrap {
+      width: min(100% - 18px, 1180px);
+      padding-top: 12px;
+    }
+    .hero,
+    .panel {
+      padding: 16px;
+      border-radius: 20px;
+    }
+
+    .menu-grid {
+      grid-template-columns: 1fr;
+    }
+    .search-box {
+      grid-template-columns: 1fr;
+    }
+    .dropdown-content {
+      left: 0;
+      right: auto;
+      min-width: min(92vw, 360px);
+    }
+    .result-table {
+      font-size: 18px;
+    }
+    .result-table th,
+    .result-table td {
+      padding: 9px 10px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>健力成績資料庫</h1>
+    <div class="hero-subtitle">查詢台灣健力公開比賽成績，可依姓名、量級、賽制與賽事篩選。</div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <strong>已建置</strong>
+        110、113、114、115 青年盃｜109–114 菁英盃｜109–113 全民運
+      </div>
+      <div class="info-card">
+        <strong>近期規劃</strong>
+        所有可取得的協會比賽成績
+      </div>
+      <div class="info-card">
+        <strong>長期規劃</strong>
+        國手選拔｜健身房自辦賽事
+      </div>
+    </div>
+
+    <div class="notice">
+      資料是從公開 PDF 整理而來，可能會有一些不可預期的錯誤；若發現異狀，請聯絡作者IG:<a href="https://www.instagram.com/rudy_hattori_pinhead/" target="_blank" rel="noopener noreferrer">
+
+  rudy_hattori_pinhead
+
+</a>。本文所載內容僅供學術研究與教學交流之用，不得用於任何商業目的。
+    </div>
+  </section>
+
+  <section class="panel">
+    <p class="panel-title">功能選單</p>
+
+    <div class="menu-grid" aria-label="功能選單">
+      <a class="menu-button" href="index.html">綜合查詢</a>
+      <a class="menu-button" href="competitions.html">賽事成績查詢</a>
+      <a class="menu-button" href="ranking.html">排名查詢</a>
+    </div>
+  </section>
+
+  <section class="panel">
+    <p class="panel-title">全國紀錄查詢</p>
+
+    <div class="search-box records-search-box">
+      <div class="field">
+        <label for="searchGroup">組別</label>
+        <select id="searchGroup">
+          <option value="">全部組別</option>
+          <option value="公開男子組">公開男子組(op)</option>
+          <option value="公開女子組">公開女子組(op)</option>
+          <option value="國中男子組">國中男子組(u15)</option>
+          <option value="國中女子組">國中女子組(u15)</option>
+          <option value="高中男子組">高中男子組(u18)</option>
+          <option value="高中女子組">高中女子組(u18)</option>
+          <option value="長青男子組1">長青男子組1(m1)</option>
+          <option value="長青女子組1">長青女子組1(m1)</option>
+          <option value="長青男子組2">長青男子組2(m2)</option>
+          <option value="長青女子組2">長青女子組2(m2)</option>
+          <option value="長青男子組3">長青男子組3(m3)</option>
+          <option value="長青女子組3">長青女子組3(m3)</option>
+          <option value="長青男子組4">長青男子組4(m4)</option>
+          <option value="長青女子組4">長青女子組4(m4)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="searchType">賽制</label>
+        <select id="searchType">
+          <option value="">全部賽制</option>
+          <option>裝備</option>
+          <option>經典</option>
+        </select>
+      </div>
+
+      <button onclick="searchRecords()" type="button">查詢</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="status-pill" id="statusText">資料載入中…</div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="small-action" onclick="clearSearch()" type="button">清空條件</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap">
+    <div id="result" class="loading-state">資料載入中，請稍候…</div>
+  </section>
+</main>
+
+<script>
+let recordData = [];
+
+const RECORD_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTEK6o2kQSUQvOF0K1FSLPPy2jPVREgQReOi_FZSmd2w-Cl32w0xhttCE9z-kWNgLIbmwlJT2Ur3h5L/pub?output=csv';
+
+const LIFT_SECTIONS = [
+  { key: 'squat', title: '蹲舉' },
+  { key: 'bench_full', title: '臥舉（三項）' },
+  { key: 'deadlift', title: '硬舉' },
+  { key: 'total', title: '總和' },
+  { key: 'bench_only', title: '臥舉（單項）' }
+];
+
+const WEIGHT_CLASSES = {
+  maleOpen: ['59kg', '66kg', '74kg', '83kg', '93kg', '105kg', '120kg', '120+kg'],
+  femaleOpen: ['47kg', '52kg', '57kg', '63kg', '69kg', '76kg', '84kg', '84+kg'],
+  maleYouth: ['53kg', '59kg', '66kg', '74kg', '83kg', '93kg', '105kg', '120kg', '120+kg'],
+  femaleYouth: ['43kg', '47kg', '52kg', '57kg', '63kg', '69kg', '76kg', '84+kg']
+};
+
+async function fetchRecordData() {
+  try {
+    const url = `${RECORD_SHEET_URL}&cacheBust=${Date.now()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const csvText = await response.text();
+    const rows = parseCSVRows(csvText);
+    recordData = parseRecordRows(rows);
+
+    if (recordData.length === 0) {
+      document.getElementById('statusText').textContent = '紀錄資料格式無法辨識';
+      document.getElementById('result').className = 'empty-state';
+      document.getElementById('result').innerHTML = '已讀取 CSV，但沒有讀到可用的紀錄資料。請確認第一列有「組別、賽制、項目、量級、姓名、體重、成績、日期、地點」等欄位。';
+      return;
+    }
+
+    document.getElementById('statusText').textContent = `已載入 ${recordData.length} 筆紀錄資料`;
+    document.getElementById('result').className = 'empty-state';
+    document.getElementById('result').innerHTML = '請選擇組別與賽制後查詢。';
+  } catch (error) {
+    console.error('Error fetching record data:', error);
+    document.getElementById('statusText').textContent = '紀錄資料載入失敗';
+    document.getElementById('result').className = 'empty-state';
+    document.getElementById('result').innerHTML = '無法載入紀錄資料，請檢查 Google Sheet 發布網址、公開權限或網路連線。';
+  }
+}
+
+function parseCSVRows(csv) {
+  const rows = [];
+  let current = '';
+  let row = [];
+  let inQuotes = false;
+
+  for (let i = 0; i < csv.length; i++) {
+    const char = csv[i];
+    const next = csv[i + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      current += '"';
+      i++;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      row.push(current.trim());
+      current = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && next === '\n') i++;
+      row.push(current.trim());
+      if (row.some(cell => cell !== '')) rows.push(row);
+      row = [];
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+
+  if (current || row.length) {
+    row.push(current.trim());
+    if (row.some(cell => cell !== '')) rows.push(row);
+  }
+
+  return rows;
+}
+
+function parseRecordRows(rows) {
+  if (rows.length < 2) return [];
+
+  const headers = rows[0].map(header => String(header || '').trim());
+
+  return rows.slice(1).map(values => {
+    const rowObject = {};
+    headers.forEach((header, index) => {
+      if (header) rowObject[header] = values[index] || '';
+    });
+
+    return {
+      '組別': getField(rowObject, ['組別']),
+      '賽制': getField(rowObject, ['賽制']),
+      '項目': canonicalLiftTitle(getField(rowObject, ['項目'])),
+      '量級': canonicalWeight(getField(rowObject, ['量級'])),
+      '姓名': getField(rowObject, ['姓名']),
+      '體重': getField(rowObject, ['體重', 'Bd.Wt.', 'Bd.Wt', 'Bodyweight', 'Body Weight', 'BW']),
+      '成績': getField(rowObject, ['成績']),
+      '日期': getField(rowObject, ['日期']),
+      '地點': getField(rowObject, ['地點'])
+    };
+  }).filter(rowData => rowData['組別'] && rowData['賽制'] && rowData['項目'] && rowData['量級']);
+}
+
+function getField(rowData, candidates) {
+  const normalizedMap = {};
+  Object.keys(rowData).forEach(key => {
+    normalizedMap[normalizeText(key)] = rowData[key];
+  });
+
+  for (const key of candidates) {
+    const normalizedKey = normalizeText(key);
+    if (normalizedMap[normalizedKey] !== undefined) {
+      return String(normalizedMap[normalizedKey] || '').trim();
+    }
+  }
+
+  return '';
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/[\u00a0\u200b-\u200d\ufeff]/g, '')
+    .replaceAll('（', '(')
+    .replaceAll('）', ')')
+    .replaceAll('＋', '+');
+}
+
+function canonicalWeight(value) {
+  return String(value || '')
+    .trim()
+    .replaceAll('＋', '+')
+    .replace(/\s+/g, '')
+    .replace(/KG$/i, 'kg');
+}
+
+function canonicalLiftTitle(value) {
+  const text = normalizeText(value);
+
+  if (text.includes('蹲舉') || text.includes('深蹲') || /squat/i.test(text)) return '蹲舉';
+  if (text.includes('硬舉') || /deadlift/i.test(text)) return '硬舉';
+  if (text.includes('總和') || /total/i.test(text)) return '總和';
+
+  if (text.includes('臥舉') || /bench/i.test(text)) {
+    if (text.includes('單項') || /single|benchonly/i.test(text)) return '臥舉（單項）';
+    return '臥舉（三項）';
+  }
+
+  return String(value || '').trim();
+}
+
+function getLiftKey(value) {
+  const text = normalizeText(value);
+
+  if (text.includes('蹲舉')) return 'squat';
+  if (text.includes('臥舉') && text.includes('單項')) return 'bench_only';
+  if (text.includes('臥舉')) return 'bench_full';
+  if (text.includes('硬舉')) return 'deadlift';
+  if (text.includes('總和')) return 'total';
+
+  return '';
+}
+
+function getWeightClassesForGroup(group, rows) {
+  let baseWeights = [];
+
+  if (group.includes('國中男子組') || group.includes('高中男子組')) {
+    baseWeights = WEIGHT_CLASSES.maleYouth;
+  } else if (group.includes('國中女子組') || group.includes('高中女子組')) {
+    baseWeights = WEIGHT_CLASSES.femaleYouth;
+  } else if (group.includes('男子組')) {
+    baseWeights = WEIGHT_CLASSES.maleOpen;
+  } else if (group.includes('女子組')) {
+    baseWeights = WEIGHT_CLASSES.femaleOpen;
+  }
+
+  const extraWeights = Array.from(new Set(rows.map(rowData => rowData['量級']).filter(Boolean)))
+    .filter(weightClass => !baseWeights.includes(weightClass))
+    .sort(sortWeightClass);
+
+  return [...baseWeights, ...extraWeights];
+}
+
+function sortWeightClass(a, b) {
+  const parseWeight = value => {
+    const match = String(value || '').replace('+', '').match(/\d+(\.\d+)?/);
+    return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+  };
+
+  return parseWeight(a) - parseWeight(b);
+}
+
+function findRecord(rows, liftKey, weightClass) {
+  return rows.find(rowData => {
+    return getLiftKey(rowData['項目']) === liftKey && normalizeText(rowData['量級']) === normalizeText(weightClass);
+  });
+}
+
+function escapeHTML(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function searchRecords() {
+  const groupInput = document.getElementById('searchGroup').value.trim();
+  const typeInput = document.getElementById('searchType').value.trim();
+
+  if (recordData.length === 0) return;
+
+  if (groupInput === '' || typeInput === '') {
+    document.getElementById('result').className = 'empty-state';
+    document.getElementById('result').innerHTML = '請先選擇「組別」與「賽制」，再進行全國紀錄查詢。';
+    document.getElementById('statusText').textContent = `已載入 ${recordData.length} 筆紀錄資料`;
+    return;
+  }
+
+  const matchedRows = recordData.filter(rowData => {
+    return normalizeText(rowData['組別']) === normalizeText(groupInput) &&
+           normalizeText(rowData['賽制']) === normalizeText(typeInput);
+  });
+
+  renderGroupedRecords(matchedRows, groupInput, typeInput);
+}
+
+function renderGroupedRecords(rows, groupInput, typeInput) {
+  if (rows.length === 0) {
+    document.getElementById('result').className = 'empty-state';
+    document.getElementById('result').innerHTML = `查無紀錄資料。<br>目前查詢條件：<strong>${escapeHTML(groupInput)}</strong>｜<strong>${escapeHTML(typeInput)}</strong>`;
+    document.getElementById('statusText').textContent = `查詢結果 0 筆｜總紀錄 ${recordData.length} 筆`;
+    return;
+  }
+
+  const weightClasses = getWeightClassesForGroup(groupInput, rows);
+  let resultHTML = '';
+
+  LIFT_SECTIONS.forEach(section => {
+    resultHTML += `<section class="record-section"><h2 class="record-section-title">${escapeHTML(section.title)}</h2>`;
+    resultHTML += '<table class="record-table"><thead><tr>';
+    ['量級', '姓名', '體重', '成績', '日期', '地點'].forEach(header => {
+      resultHTML += `<th>${escapeHTML(header)}</th>`;
+    });
+    resultHTML += '</tr></thead><tbody>';
+
+    weightClasses.forEach(weightClass => {
+      const rowData = findRecord(rows, section.key, weightClass);
+      resultHTML += '<tr>';
+      resultHTML += `<td>${escapeHTML(weightClass)}</td>`;
+      resultHTML += `<td>${escapeHTML(rowData ? rowData['姓名'] : '—')}</td>`;
+      resultHTML += `<td>${escapeHTML(rowData ? rowData['體重'] : '—')}</td>`;
+      resultHTML += `<td>${escapeHTML(rowData ? rowData['成績'] : '—')}</td>`;
+      resultHTML += `<td>${escapeHTML(rowData ? rowData['日期'] : '—')}</td>`;
+      resultHTML += `<td>${escapeHTML(rowData ? rowData['地點'] : '—')}</td>`;
+      resultHTML += '</tr>';
+    });
+
+    resultHTML += '</tbody></table></section>';
+  });
+
+  document.getElementById('result').className = '';
+  document.getElementById('result').innerHTML = resultHTML;
+  document.getElementById('statusText').textContent = `${groupInput}｜${typeInput}｜符合資料 ${rows.length} 筆`;
+}
+
+function clearSearch() {
+  document.getElementById('searchGroup').value = '';
+  document.getElementById('searchType').value = '';
+  document.getElementById('result').className = 'empty-state';
+  document.getElementById('result').innerHTML = '請選擇組別與賽制後查詢。';
+  document.getElementById('statusText').textContent = `已載入 ${recordData.length} 筆紀錄資料`;
+}
+
+window.onload = fetchRecordData;
+</script>
+
+</body>
+</html>
