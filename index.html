@@ -349,6 +349,12 @@
     left: 0;
     z-index: 11;
     box-shadow: 8px 0 12px rgba(73, 55, 36, .05);
+
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+    white-space: normal;
+    word-break: keep-all;
   }
 
   .result-table th:first-child {
@@ -391,6 +397,7 @@
       width: min(100% - 18px, 1180px);
       padding-top: 12px;
     }
+
     .hero,
     .panel {
       padding: 16px;
@@ -400,22 +407,81 @@
     .menu-grid {
       grid-template-columns: 1fr;
     }
+
     .search-box {
       grid-template-columns: 1fr;
     }
+
     .dropdown-content {
       left: 0;
       right: auto;
       min-width: min(92vw, 360px);
     }
-    .result-table {
+
+    .hero-subtitle {
+      font-size: 15px;
+    }
+
+    .info-card {
+      font-size: 14px;
+    }
+
+    .notice {
+      font-size: 13px;
+    }
+
+    .panel-title {
       font-size: 18px;
     }
+
+    .menu-button {
+      font-size: 16px;
+    }
+
+    .field label {
+      font-size: 13px;
+    }
+
+    input,
+    select {
+      font-size: 16px;
+    }
+
+    button {
+      font-size: 15px;
+    }
+
+    .status-pill {
+      font-size: 14px;
+    }
+
+    .dropdown-content label {
+      font-size: 14px;
+    }
+
+    .result-table {
+      font-size: 15px;
+    }
+
     .result-table th,
     .result-table td {
       padding: 9px 10px;
     }
-  }
+
+    .record-section-title {
+      font-size: 18px;
+    }
+
+    .record-table {
+      font-size: 15px;
+    }
+
+    .record-table th,
+    .record-table td {
+      padding: 9px 10px;
+    }
+  }  
+  
 </style>
 </head>
 <body>
