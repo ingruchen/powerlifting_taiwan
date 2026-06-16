@@ -461,11 +461,11 @@
       </div>
       <div class="info-card">
         <strong>近期規劃</strong>
-        台灣選手參與正式國際賽事之成績
+        所有可取得的協會比賽成績
       </div>
       <div class="info-card">
         <strong>長期規劃</strong>
-        健身房自辦賽事｜早期官方賽事與國手選拔
+        國手選拔｜健身房自辦賽事
       </div>
     </div>
 
@@ -638,6 +638,15 @@ function normalizeText(value) {
     .trim()
     .replace(/\s+/g, '')
     .replace(/[\u00a0\u200b-\u200d\ufeff]/g, '');
+}
+
+function canonicalWeight(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .trim()
+    .replaceAll('＋', '+')
+    .replace(/\s+/g, '')
+    .replace(/kg$/i, '');
 }
 
 function getRowYear(rowData) {
@@ -826,7 +835,7 @@ function searchCompetitionData() {
 
 function groupRowsByWeightClass(rows) {
   return rows.reduce((groups, rowData) => {
-    const weightClass = rowData['量級'] || '未標示量級';
+    const weightClass = canonicalWeight(rowData['量級']) || '未標示量級';
     if (!groups[weightClass]) groups[weightClass] = [];
     groups[weightClass].push(rowData);
     return groups;
