@@ -467,11 +467,11 @@
       </div>
       <div class="info-card">
         <strong>近期規劃</strong>
-        台灣選手參與正式國際賽事之成績
+        所有可取得的協會比賽成績
       </div>
       <div class="info-card">
         <strong>長期規劃</strong>
-        健身房自辦賽事｜早期官方賽事與國手選拔
+        國手選拔｜健身房自辦賽事
       </div>
     </div>
 
@@ -584,10 +584,10 @@ const GROUP_OPTIONS = {
 };
 
 const WEIGHT_CLASSES = {
-  maleOpen: ['59kg', '66kg', '74kg', '83kg', '93kg', '105kg', '120kg', '120+kg'],
-  femaleOpen: ['47kg', '52kg', '57kg', '63kg', '69kg', '76kg', '84kg', '84+kg'],
-  maleYouth: ['53kg', '59kg', '66kg', '74kg', '83kg', '93kg', '105kg', '120kg', '120+kg'],
-  femaleYouth: ['43kg', '47kg', '52kg', '57kg', '63kg', '69kg', '76kg', '84kg', '84+kg']
+  maleOpen: ['59', '66', '74', '83', '93', '105', '120', '120+'],
+  femaleOpen: ['47', '52', '57', '63', '69', '76', '84', '84+'],
+  maleYouth: ['53', '59', '66', '74', '83', '93', '105', '120', '120+'],
+  femaleYouth: ['43', '47', '52', '57', '63', '69', '76', '84', '84+']
 };
 
 async function fetchSheetData() {
@@ -667,7 +667,7 @@ function canonicalWeight(value) {
     .trim()
     .replaceAll('＋', '+')
     .replace(/\s+/g, '')
-    .replace(/KG$/i, 'kg');
+    .replace(/kg$/i, '');
 }
 
 function parseNumber(value) {
