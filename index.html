@@ -438,11 +438,11 @@
       </div>
       <div class="info-card">
         <strong>近期規劃</strong>
-        台灣選手參與正式國際賽事之成績
+        所有可取得的協會比賽成績
       </div>
       <div class="info-card">
         <strong>長期規劃</strong>
-        健身房自辦賽事｜早期官方賽事與國手選拔
+        國手選拔｜健身房自辦賽事
       </div>
     </div>
 
@@ -479,14 +479,14 @@
         <select id="searchWeight">
           <option value="">全部量級</option>
           <option disabled style="font-weight: bold;">-----男子量級-----</option>
-          <option value="53kg">53kg(U18)</option>
-          <option>59kg</option><option>66kg</option><option>74kg</option><option>83kg</option>
-          <option>93kg</option><option>105kg</option><option>120kg</option><option>120+kg</option>
+          <option value="53">53(U18)</option>
+          <option>59</option><option>66</option><option>74</option><option>83</option>
+          <option>93</option><option>105</option><option>120</option><option>120+</option>
           <option disabled style="font-weight: bold;">-----女子量級-----</option>
-          <option value="43kg">43kg(U18)</option>
-          <option>47kg</option><option>52kg</option><option>57kg</option><option>63kg</option>
-          <option>69kg</option><option value="72kg">72kg(2020以前)</option><option>76kg</option>
-          <option>84kg</option><option>84+kg</option>
+          <option value="43">43(U18)</option>
+          <option>47</option><option>52</option><option>57</option><option>63</option>
+          <option>69</option><option value="72">72(2020以前)</option><option>76</option>
+          <option>84</option><option>84+</option>
         </select>
       </div>
 
@@ -653,6 +653,15 @@ function escapeHTML(value) {
     .replaceAll("'", '&#039;');
 }
 
+function canonicalWeight(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .trim()
+    .replaceAll('＋', '+')
+    .replace(/\s+/g, '')
+    .replace(/kg$/i, '');
+}
+
 function searchData() {
   const nameInput = document.getElementById('searchName').value.trim();
   const weightInput = document.getElementById('searchWeight').value.trim();
@@ -670,7 +679,7 @@ function searchData() {
 
     return (
       (nameInput === '' || rowName.includes(nameInput)) &&
-      (weightInput === '' || rowWeight === weightInput) &&
+      (weightInput === '' || canonicalWeight(rowWeight) === canonicalWeight(weightInput)) &&
       (typeInput === '' || rowType === typeInput) &&
       (eventInput === '' || rowEvent.includes(eventInput))
     );
