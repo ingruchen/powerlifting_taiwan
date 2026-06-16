@@ -349,12 +349,12 @@
     left: 0;
     z-index: 11;
     box-shadow: 8px 0 12px rgba(73, 55, 36, .05);
-
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
-    white-space: normal;
-    word-break: keep-all;
+    width: calc(5em + 24px);
+    min-width: calc(5em + 24px);
+    max-width: calc(5em + 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .result-table th:first-child {
@@ -397,7 +397,6 @@
       width: min(100% - 18px, 1180px);
       padding-top: 12px;
     }
-
     .hero,
     .panel {
       padding: 16px;
@@ -407,81 +406,22 @@
     .menu-grid {
       grid-template-columns: 1fr;
     }
-
     .search-box {
       grid-template-columns: 1fr;
     }
-
     .dropdown-content {
       left: 0;
       right: auto;
       min-width: min(92vw, 360px);
     }
-
-    .hero-subtitle {
-      font-size: 15px;
-    }
-
-    .info-card {
-      font-size: 14px;
-    }
-
-    .notice {
-      font-size: 13px;
-    }
-
-    .panel-title {
+    .result-table {
       font-size: 18px;
     }
-
-    .menu-button {
-      font-size: 16px;
-    }
-
-    .field label {
-      font-size: 13px;
-    }
-
-    input,
-    select {
-      font-size: 16px;
-    }
-
-    button {
-      font-size: 15px;
-    }
-
-    .status-pill {
-      font-size: 14px;
-    }
-
-    .dropdown-content label {
-      font-size: 14px;
-    }
-
-    .result-table {
-      font-size: 15px;
-    }
-
     .result-table th,
     .result-table td {
       padding: 9px 10px;
     }
-
-    .record-section-title {
-      font-size: 18px;
-    }
-
-    .record-table {
-      font-size: 15px;
-    }
-
-    .record-table th,
-    .record-table td {
-      padding: 9px 10px;
-    }
-  }  
-  
+  }
 </style>
 </head>
 <body>
@@ -498,11 +438,11 @@
       </div>
       <div class="info-card">
         <strong>近期規劃</strong>
-        所有可取得的協會比賽成績
+        台灣選手參與正式國際賽事之成績
       </div>
       <div class="info-card">
         <strong>長期規劃</strong>
-        國手選拔｜健身房自辦賽事
+        健身房自辦賽事｜早期官方賽事與國手選拔
       </div>
     </div>
 
@@ -652,6 +592,21 @@ function parseCSV(csv) {
   });
 }
 
+const DEFAULT_VISIBLE_COLUMNS = new Set([
+  '姓名',
+  '出生年',
+  '量級',
+  '蹲舉',
+  '臥舉',
+  '硬舉',
+  '總和',
+  '賽制',
+  '賽事',
+  '組別',
+  '日期',
+  '地點'
+]);
+
 function setupColumnSelector() {
   if (sheetData.length === 0) return;
   const dropdown = document.getElementById('columnDropdown');
@@ -660,7 +615,8 @@ function setupColumnSelector() {
   dropdown.innerHTML = '';
   headers.forEach((header, index) => {
     const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" checked data-index="${index}" onchange="applyColumnVisibility()"> ${header}`;
+    const checked = DEFAULT_VISIBLE_COLUMNS.has(header) ? 'checked' : '';
+    label.innerHTML = `<input type="checkbox" ${checked} data-index="${index}" onchange="applyColumnVisibility()"> ${header}`;
     dropdown.appendChild(label);
   });
 }
