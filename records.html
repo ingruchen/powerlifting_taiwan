@@ -564,7 +564,7 @@
     <div class="info-grid">
       <div class="info-card">
         <strong>已建置</strong>
-        國內賽：110、113、114、115青年盃｜109–115菁英盃｜109–113全民運。<br>
+        國內賽：110、113、114、115青年盃｜109–115菁英盃｜109–115全民運。<br>
         國際賽：1988.10-2026.8期間的台灣選手參賽紀錄。
       </div>
       <div class="info-card">
@@ -629,6 +629,7 @@
           <option>裝備</option>
           <option>裝備(全民運動會)</option>
           <option>經典</option>
+          <option>經典(全民運動會)</option>
         </select>
       </div>
 
@@ -668,6 +669,9 @@ const WEIGHT_CLASSES = {
   maleYouth: ['53', '59', '66', '74', '83', '93', '105', '120', '120+'],
   femaleYouth: ['43', '47', '52', '57', '63', '69', '76', '84+']
 };
+
+// 全民運動會經典組採用四種量級，獨立於其他賽制。
+const NATIONAL_GAMES_CLASSIC_WEIGHTS = ['輕', '中', '重', '超重'];
 
 async function fetchRecordData() {
   try {
@@ -754,7 +758,8 @@ function parseRecordRows(rows) {
       '體重': getField(rowObject, ['體重', 'Bd.Wt.', 'Bd.Wt', 'Bodyweight', 'Body Weight', 'BW']),
       '成績': getField(rowObject, ['成績']),
       '日期': getField(rowObject, ['日期']),
-      '地點': getField(rowObject, ['地點'])
+      '地點': getField(rowObject, ['地點']),
+      'GL': getField(rowObject, ['GL'])
     };
   }).filter(rowData => rowData['組別'] && rowData['賽制'] && rowData['項目'] && rowData['量級']);
 }
@@ -850,9 +855,17 @@ function sortWeightClass(a, b) {
   return parseWeight(a) - parseWeight(b);
 }
 
-function findRecord(rows, liftKey, weightClass) {
+// 同時相容資料表中的「輕」及「輕量級」等量級寫法。
+function normalizeNationalGamesClassicWeight(value) {
+  return normalizeText(value).replace(/量級$/, '');
+}
+
+function findRecord(rows, liftKey, weightClass, isNationalGamesClassic = false) {
   return rows.find(rowData => {
-    return getLiftKey(rowData['項目']) === liftKey && normalizeText(rowData['量級']) === normalizeText(weightClass);
+    const weightMatches = isNationalGamesClassic
+      ? normalizeNationalGamesClassicWeight(rowData['量級']) === normalizeNationalGamesClassicWeight(weightClass)
+      : normalizeText(rowData['量級']) === normalizeText(weightClass);
+    return getLiftKey(rowData['項目']) === liftKey && weightMatches;
   });
 }
 
@@ -900,24 +913,31 @@ function renderGroupedRecords(rows, groupInput, typeInput) {
     return;
   }
 
-  const weightClasses = getWeightClassesForGroup(groupInput, rows);
+  const isNationalGamesClassic = normalizeText(typeInput) === '經典(全民運動會)';
+  const weightClasses = isNationalGamesClassic
+    ? NATIONAL_GAMES_CLASSIC_WEIGHTS
+    : getWeightClassesForGroup(groupInput, rows);
+  const liftSections = isNationalGamesClassic
+    ? LIFT_SECTIONS.filter(section => section.key !== 'bench_only')
+    : LIFT_SECTIONS;
   let resultHTML = '';
 
-  LIFT_SECTIONS.forEach(section => {
+  liftSections.forEach(section => {
     resultHTML += `<section class="record-section"><h2 class="record-section-title">${escapeHTML(section.title)}</h2>`;
     resultHTML += '<table class="record-table"><thead><tr>';
-    ['量級', '姓名', '體重', '成績', '日期', '地點'].forEach(header => {
+    ['量級', '姓名', '體重', '成績', 'GL','日期', '地點'].forEach(header => {
       resultHTML += `<th>${escapeHTML(header)}</th>`;
     });
     resultHTML += '</tr></thead><tbody>';
 
     weightClasses.forEach(weightClass => {
-      const rowData = findRecord(rows, section.key, weightClass);
+      const rowData = findRecord(rows, section.key, weightClass, isNationalGamesClassic);
       resultHTML += '<tr>';
       resultHTML += `<td>${escapeHTML(weightClass)}</td>`;
       resultHTML += `<td class="name-cell">${formatNameForDisplay(rowData ? rowData['姓名'] : '—')}</td>`;
       resultHTML += `<td>${escapeHTML(rowData ? rowData['體重'] : '—')}</td>`;
       resultHTML += `<td>${escapeHTML(rowData ? rowData['成績'] : '—')}</td>`;
+      resultHTML += `<td>${escapeHTML(rowData ? rowData['GL'] : '—')}</td>`;
       resultHTML += `<td>${escapeHTML(rowData ? rowData['日期'] : '—')}</td>`;
       resultHTML += `<td>${escapeHTML(rowData ? rowData['地點'] : '—')}</td>`;
       resultHTML += '</tr>';
