@@ -624,12 +624,8 @@
 
       <div class="field">
         <label for="searchType">賽制</label>
-        <select id="searchType">
-          <option value="">全部賽制</option>
-          <option>裝備</option>
-          <option>裝備(全民運動會)</option>
-          <option>經典</option>
-          <option>經典(全民運動會)</option>
+        <select id="searchType" disabled>
+          <option value="">請先選擇組別</option>
         </select>
       </div>
 
@@ -672,6 +668,27 @@ const WEIGHT_CLASSES = {
 
 // 全民運動會經典組採用四種量級，獨立於其他賽制。
 const NATIONAL_GAMES_CLASSIC_WEIGHTS = ['輕', '中', '重', '超重'];
+
+// 先根據組別決定可查詢的賽制；只有公開男女組提供全民運動會賽制。
+const STANDARD_RECORD_TYPES = ['裝備', '經典'];
+const PUBLIC_RECORD_TYPES = ['裝備', '裝備(全民運動會)', '經典', '經典(全民運動會)'];
+
+function updateRecordTypeOptions() {
+  const group = document.getElementById('searchGroup').value;
+  const typeSelect = document.getElementById('searchType');
+  const isPublicGroup = group === '公開男子組' || group === '公開女子組';
+  const availableTypes = isPublicGroup ? PUBLIC_RECORD_TYPES : STANDARD_RECORD_TYPES;
+
+  // 組別變更時清除舊賽制，避免保留不適用的查詢條件。
+  typeSelect.replaceChildren(
+    new Option(group ? '全部賽制' : '請先選擇組別', ''),
+    ...(group ? availableTypes.map(type => new Option(type, type)) : [])
+  );
+  typeSelect.disabled = !group;
+}
+
+document.getElementById('searchGroup').addEventListener('change', updateRecordTypeOptions);
+updateRecordTypeOptions();
 
 async function fetchRecordData() {
   try {
@@ -953,7 +970,7 @@ function renderGroupedRecords(rows, groupInput, typeInput) {
 
 function clearSearch() {
   document.getElementById('searchGroup').value = '';
-  document.getElementById('searchType').value = '';
+  updateRecordTypeOptions();
   document.getElementById('result').className = 'empty-state';
   document.getElementById('result').innerHTML = '請選擇組別與賽制後查詢。';
   document.getElementById('statusText').textContent = `已載入 ${recordData.length} 筆紀錄資料`;
