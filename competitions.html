@@ -466,7 +466,7 @@
     <div class="info-grid">
       <div class="info-card">
         <strong>已建置</strong>
-        國內賽：110、113、114、115青年盃｜109–115菁英盃｜109–113全民運。<br>
+        國內賽：110、113、114、115青年盃｜109–115菁英盃｜109–115全民運。<br>
         國際賽：1988.10-2026.8期間的台灣選手參賽紀錄。
       </div>
       <div class="info-card">
@@ -481,7 +481,7 @@
     </div>
 
     <div class="notice">
-      賽事成績資料整理自公開資料與官方賽事公告檔案；全國紀錄則依據官方網站及具直播紀錄之IPF正式國際賽成績，比對後擇優記錄。若發現錯誤，請不吝指正與聯絡作者:<a href="https://www.instagram.com/rudy_hattori_pinhead/" target="_blank" rel="noopener noreferrer">
+      資料來源為公開資料、官方賽事公告檔案以及現場取材；全國紀錄則依據官方網站與直播紀錄之IPF認證賽事成績，比對後擇優記錄。若發現錯誤，請不吝指正與聯絡作者:<a href="https://www.instagram.com/rudy_hattori_pinhead/" target="_blank" rel="noopener noreferrer">
 
   rudy_hattori_pinhead
 
@@ -548,6 +548,12 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="small-action" onclick="clearSearch()" type="button">清空條件</button>
+        <div class="column-control" id="columnControl">
+          <button class="dropbtn" id="columnButton" type="button" onclick="toggleColumnMenu()" aria-controls="columnDropdown" aria-expanded="false" disabled>顯示欄位 ▾</button>
+          <div class="dropdown-content" id="columnDropdown" role="group" aria-label="選擇顯示欄位">
+            <div style="color:var(--muted);">資料載入中…</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -559,6 +565,12 @@
 
 <script>
 let sheetData = [];
+// 預設顯示以下十個欄位；其他欄位仍可從「顯示欄位」選單自行勾選。
+const DEFAULT_VISIBLE_COLUMNS = ['姓名', '單位', '體重', '蹲舉', '臥舉', '硬舉', '總和', 'T.Rk', 'GL', 'GL.Rk'];
+let resultColumnHeaders = [];
+let visibleResultColumns = new Set();
+
+const MERGED_WEIGHT_ORDER = ['輕量級', '中量級', '重量級', '超重量級'];
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRFAGAxugycmghkxnrii5L1llC3kX1uFN-1sFbry6ft6LsyeenLrKiBg7RLspwtsaxpiXNR5ESLg7Ru/pub?gid=633174637&single=true&output=csv';
 
 const GROUP_ORDER = [
@@ -585,6 +597,7 @@ async function fetchSheetData() {
     const response = await fetch(`${SHEET_URL}&cacheBust=${Date.now()}`);
     const csvText = await response.text();
     sheetData = parseCSV(csvText);
+    initializeResultColumns();
 
     document.getElementById('statusText').textContent = `已載入 ${sheetData.length} 筆資料`;
     document.getElementById('result').className = 'empty-state';
@@ -594,8 +607,67 @@ async function fetchSheetData() {
     document.getElementById('statusText').textContent = '資料載入失敗';
     document.getElementById('result').className = 'empty-state';
     document.getElementById('result').innerHTML = '無法載入資料，請檢查網路連線。';
+    document.getElementById('columnButton').disabled = true;
   }
 }
+
+function initializeResultColumns() {
+  resultColumnHeaders = Object.keys(sheetData[0] || {});
+  visibleResultColumns = new Set(resultColumnHeaders.filter(header => DEFAULT_VISIBLE_COLUMNS.includes(header.trim())));
+
+  const dropdown = document.getElementById('columnDropdown');
+  const button = document.getElementById('columnButton');
+  dropdown.innerHTML = '';
+  button.disabled = resultColumnHeaders.length === 0;
+
+  resultColumnHeaders.forEach((header, index) => {
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = header;
+    checkbox.checked = visibleResultColumns.has(header);
+    checkbox.addEventListener('change', () => changeResultColumn(header, checkbox));
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(header));
+    dropdown.appendChild(label);
+  });
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'margin-top:8px;color:var(--muted);font-size:14px;';
+  hint.textContent = '勾選要顯示的欄位（至少保留一欄）';
+  dropdown.appendChild(hint);
+}
+
+function toggleColumnMenu() {
+  const dropdown = document.getElementById('columnDropdown');
+  const isOpen = dropdown.classList.toggle('show');
+  document.getElementById('columnButton').setAttribute('aria-expanded', String(isOpen));
+}
+
+function changeResultColumn(header, checkbox) {
+  if (checkbox.checked) {
+    visibleResultColumns.add(header);
+  } else if (visibleResultColumns.size > 1) {
+    visibleResultColumns.delete(header);
+  } else {
+    checkbox.checked = true;
+    return;
+  }
+
+  const columnIndex = resultColumnHeaders.indexOf(header);
+  if (columnIndex < 0) return;
+  document.querySelectorAll(`.result-table [data-column-index="${columnIndex}"]`).forEach(cell => {
+    cell.classList.toggle('hide-column', !visibleResultColumns.has(header));
+  });
+}
+
+document.addEventListener('click', event => {
+  const control = document.getElementById('columnControl');
+  if (control && !control.contains(event.target)) {
+    document.getElementById('columnDropdown').classList.remove('show');
+    document.getElementById('columnButton').setAttribute('aria-expanded', 'false');
+  }
+});
 
 function parseCSV(csv) {
   const rows = [];
@@ -793,8 +865,8 @@ function searchCompetitionData() {
     return;
   }
 
-  const hiddenResultColumns = ['賽制', '賽事', '組別', '日期', '地點', '量級'];
-  const headers = Object.keys(sheetData[0]).filter(header => !hiddenResultColumns.includes(header));
+  const headers = resultColumnHeaders;
+  const useMergedWeightClasses = normalizeText(eventInput).includes('全民運動會') && normalizeText(typeInput) === '經典';
   const matchedRows = sheetData.filter(rowData => {
     return (
       getRowYear(rowData) === yearInput &&
@@ -811,28 +883,31 @@ function searchCompetitionData() {
     return;
   }
 
-  const rowsByWeight = groupRowsByWeightClass(matchedRows);
-  const weightClasses = Object.keys(rowsByWeight).sort(sortWeightClass);
+  const rowsByWeight = groupRowsByWeightClass(matchedRows, useMergedWeightClasses, groupInput);
+  const weightClasses = Object.keys(rowsByWeight).sort(useMergedWeightClasses ? sortMergedWeightClass : sortWeightClass);
   let resultHTML = '';
 
   weightClasses.forEach(weightClass => {
     const rowsInWeightClass = rowsByWeight[weightClass].sort(sortRowsByTotalRank);
 
-    resultHTML += `<section class="weight-section"><h2 class="weight-section-title">${escapeHTML(weightClass)}級</h2>`;
+    const weightClassTitle = weightClass.endsWith('級') ? weightClass : `${weightClass}級`;
+    resultHTML += `<section class="weight-section"><h2 class="weight-section-title">${escapeHTML(weightClassTitle)}</h2>`;
     resultHTML += '<table class="result-table"><thead><tr>';
-    headers.forEach(header => {
-      resultHTML += `<th>${escapeHTML(header)}</th>`;
+    headers.forEach((header, index) => {
+      const hideClass = visibleResultColumns.has(header) ? '' : ' class="hide-column"';
+      resultHTML += `<th data-column-index="${index}"${hideClass}>${escapeHTML(header)}</th>`;
     });
     resultHTML += '</tr></thead><tbody>';
 
     rowsInWeightClass.forEach(rowData => {
       resultHTML += '<tr>';
-      headers.forEach(header => {
-        if (header === '姓名') {
-          resultHTML += `<td class="name-cell">${formatNameForDisplay(rowData[header] || '')}</td>`;
-        } else {
-          resultHTML += `<td>${escapeHTML(rowData[header] || '')}</td>`;
-        }
+      headers.forEach((header, index) => {
+        const classes = [header === '姓名' ? 'name-cell' : '', visibleResultColumns.has(header) ? '' : 'hide-column'].filter(Boolean);
+        const classAttribute = classes.length ? ` class="${classes.join(' ')}"` : '';
+        const cellValue = header === '姓名'
+          ? formatNameForDisplay(rowData[header] || '')
+          : escapeHTML(rowData[header] || '');
+        resultHTML += `<td data-column-index="${index}"${classAttribute}>${cellValue}</td>`;
       });
       resultHTML += '</tr>';
     });
@@ -845,13 +920,61 @@ function searchCompetitionData() {
   document.getElementById('statusText').textContent = `查詢結果 ${matchedRows.length} 筆｜總資料 ${sheetData.length} 筆`;
 }
 
-function groupRowsByWeightClass(rows) {
+// 只有「全民運動會」且賽制為「經典」時套用四種合併量級。
+// 若試算表已有「合併量級」，優先採用；否則依原量級或過磅體重推算。
+function isKnownMergedClass(value) {
+  const normalized = normalizeText(value);
+  if (normalized.includes('超重')) return '超重量級';
+  if (normalized.includes('輕量') || normalized === '輕') return '輕量級';
+  if (normalized.includes('中量') || normalized === '中') return '中量級';
+  if (normalized.includes('重量') || normalized === '重') return '重量級';
+  return '';
+}
+
+function getMergedWeightClass(rowData, groupName) {
+  const explicitMergedClass = isKnownMergedClass(rowData['合併量級'] || rowData['合併級別'] || '');
+  if (explicitMergedClass) return explicitMergedClass;
+
+  const originalClass = String(rowData['量級'] || '').trim();
+  const namedClass = isKnownMergedClass(originalClass);
+  if (namedClass) return namedClass;
+
+  // 官方四級界線（公斤）：男子 66／83／105；女子 52／63／76。
+  const group = normalizeText(groupName);
+  const cutoffs = group.includes('女子') || (group.includes('女') && !group.includes('男'))
+    ? [52, 63, 76]
+    : group.includes('男') ? [66, 83, 105] : null;
+  if (!cutoffs) return '未標示量級';
+
+  // 量級欄可能是 66、66kg、66公斤、+120 等格式；優先使用量級而非體重。
+  const weightText = originalClass || String(rowData['體重'] || rowData['Bd.Wt.'] || rowData['BW'] || '').trim();
+  const match = weightText.normalize('NFKC').match(/\d+(?:\.\d+)?/);
+  if (!match) return '未標示量級';
+  const weight = Number(match[0]);
+  if (weight <= cutoffs[0]) return '輕量級';
+  if (weight <= cutoffs[1]) return '中量級';
+  if (weight <= cutoffs[2]) return '重量級';
+  return '超重量級';
+}
+
+function groupRowsByWeightClass(rows, useMergedWeightClasses = false, groupName = '') {
   return rows.reduce((groups, rowData) => {
-    const weightClass = rowData['量級'] || '未標示量級';
+    const weightClass = useMergedWeightClasses
+      ? getMergedWeightClass(rowData, groupName)
+      : (rowData['量級'] || '未標示量級');
     if (!groups[weightClass]) groups[weightClass] = [];
     groups[weightClass].push(rowData);
     return groups;
-  }, {});
+  }, Object.create(null));
+}
+
+function sortMergedWeightClass(a, b) {
+  const rankA = MERGED_WEIGHT_ORDER.indexOf(a);
+  const rankB = MERGED_WEIGHT_ORDER.indexOf(b);
+  if (rankA !== -1 && rankB !== -1) return rankA - rankB;
+  if (rankA !== -1) return -1;
+  if (rankB !== -1) return 1;
+  return sortWeightClass(a, b);
 }
 
 function sortWeightClass(a, b) {
@@ -870,9 +993,17 @@ function parseRankValue(value) {
   return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
 }
 
+// 每位選手優先以總和名次排序；總和名次空白時，改用 GL 名次。
+// 若兩者都沒有有效名次，排在有名次的選手後面。
+function getPreferredRank(rowData) {
+  const totalRank = parseRankValue(rowData['T.Rk']);
+  if (totalRank !== Number.MAX_SAFE_INTEGER) return totalRank;
+  return parseRankValue(rowData['GL.Rk']);
+}
+
 function sortRowsByTotalRank(a, b) {
-  const rankA = parseRankValue(a['T.Rk']);
-  const rankB = parseRankValue(b['T.Rk']);
+  const rankA = getPreferredRank(a);
+  const rankB = getPreferredRank(b);
 
   if (rankA !== rankB) return rankA - rankB;
   return String(a['姓名'] || '').localeCompare(String(b['姓名'] || ''), 'zh-Hant');
